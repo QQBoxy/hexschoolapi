@@ -1,0 +1,173 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-TW" xml:lang="zh-TW" dir="<$BlogLanguageDirection$>">
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>
+		<$BlogPageTitle$>
+	</title>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css" />
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.2.45/vue.global.prod.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.2.2/axios.min.js"></script>
+	<script type="text/javascript">
+		//<![CDATA[
+		(function () { //No country redirect
+			if (document.URL.match(/\.blogspot\.(com\...\/|..\/)/)) {
+				var URL = document.URL;
+				URL = URL.replace(URL.match(/\.blogspot\.(com\...\/|..\/)/)[0], ".blogspot.com\/ncr\/");
+				document.location = URL;
+			}
+		})()
+//]]>
+		/* </head> */</script>
+</head>
+<!-- <body> -->
+
+<body>
+	<div id="app" class="container">
+		<h1>六角學院 API 資料產生器</h1>
+		<div class="alert alert-primary" role="alert">
+			這是一個非官方工具，程式由純前端撰寫，用於產生作業測試用的產品資料，假資料來自於 <a href="https://dummyjson.com">dummyjson.com</a>
+			網站。本程式不會儲存帳密，每次使用請先登入再點選新增資料。
+		</div>
+		<div class="row">
+			<div class="col-sm">
+				<form @submit.prevent="onSubmit">
+					<div class="form-group">
+						<label for="inputEmail">信箱</label>
+						<input type="email" class="form-control" id="inputEmail" aria-describedby="emailHelp"
+							placeholder="Email" v-model="username">
+					</div>
+					<div class="form-group">
+						<label for="inputPassword">密碼</label>
+						<input type="password" class="form-control" id="inputPassword" placeholder="Password"
+							v-model="password">
+					</div>
+					<div class="form-group">
+						<label for="inputPath">API_PATH</label>
+						<input type="text" class="form-control" id="inputPath" placeholder="API PATH" v-model="apiPath">
+					</div>
+					<div class="form-group">
+						<label for="inputToken">Token</label>
+						<input type="password" class="form-control" id="inputToken" placeholder="Token" v-model="token">
+					</div>
+					<div class="form-group pt-3">
+						<button type="submit" class="btn btn-primary">登入</button>
+					</div>
+				</form>
+			</div>
+			<div class="col-sm">
+				<form @submit.prevent="onAddLoop">
+					<div class="form-group">
+						<label for="inputRange" class="form-label">新增 {{limit}} 筆假資料</label>
+						<input type="range" class="form-range" id="inputRange" min="0" max="30" step="1"
+							v-model="limit">
+					</div>
+					<div class="form-group pt-3">
+						<button type="submit" class="btn btn-primary" v-bind:disabled="token == ''">開始</button>
+					</div>
+				</form>
+				<div class="mb-3 pt-3">
+					<label for="formControlTextarea" class="form-label">Logs</label>
+					<textarea class="form-control" id="formControlTextarea" rows="10" v-model="log" readonly></textarea>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script>
+		const BASE_URL = "https://vue3-course-api.hexschool.io";
+
+		const app = {
+			data() {
+				return {
+					username: "",
+					password: "",
+					apiPath: "",
+					token: "",
+					fakeProducts: [],
+					products: [],
+					logs: [],
+					limit: 30,
+				};
+			},
+			methods: {
+				async getFakeProducts() {
+					const response = await axios({
+						method: 'get',
+						url: "https://dummyjson.com/products",
+						params: {
+							limit: this.limit,
+							skip: 0,
+						}
+					});
+					this.fakeProducts = response.data.products;
+				},
+				async login() {
+					const response = await axios({
+						method: 'post',
+						url: `${BASE_URL}/v2/admin/signin`, // Login API
+						data: {
+							username: this.username,
+							password: this.password,
+						}
+					});
+					this.token = response.data.token;
+				},
+				async addProduct(product) {
+					const response = await axios({
+						method: 'post',
+						url: `${BASE_URL}/v2/api/${this.apiPath}/admin/product`,
+						headers: { Authorization: this.token }, // 夾帶 token 字串
+						data: {
+							data: product
+						}
+					}).catch((error) => {
+						console.log(error.response.data.message); // 錯誤時的響應
+					});
+					this.logs.push(`成功新增 1 筆資料: ${product.title}`);
+				},
+				async onSubmit() {
+					await this.login();
+				},
+				async onAddLoop() {
+					await this.getFakeProducts();
+					for (let fakeProduct of this.fakeProducts) {
+						await this.addProduct({
+							title: fakeProduct.title,
+							category: fakeProduct.category,
+							origin_price: fakeProduct.price,
+							price: parseInt(fakeProduct.price * (1 - fakeProduct.discountPercentage * 0.01), 10),
+							unit: "個",
+							description: fakeProduct.brand,
+							content: "內容",
+							is_enabled: 1,
+							imageUrl: fakeProduct.thumbnail,
+							imagesUrl: fakeProduct.images
+						});
+					}
+				}
+			},
+			computed: {
+				log: {
+					get() {
+						return this.logs.reduce((accu, curr) => {
+							return curr + "\n" + accu;
+						}, "");
+					},
+					set(newValue) {
+						this.logs = newValue.split("\n");
+					}
+				}
+			},
+			async mounted() {
+
+			}
+		};
+
+		Vue.createApp(app).mount('#app');
+	</script>
+	<!-- </body> -->
+</body>
+
+</html>
