@@ -7,6 +7,26 @@
 		<$BlogPageTitle$>
 	</title>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css" />
+	<style>
+		html,
+		body {
+			margin: 0 auto;
+		}
+
+		.background {
+			margin: 0 auto;
+			background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgELIFXMuxx0cvH6lKHtxtRMBfNXK1OqF1quf51yYV8keBWzAq-teQO89TVNiuzY_-CXLmY-nTCS4ChV_aShsBxRiQjsz_nIWwYmQMpCL961RxVahz_n93CNgS_2g4zu2-66wSCYdslOXpbQwyvcxtR3Ciq7AVGlXaTkacKzQ9OmyAUJITuBU9BpaAy/s0/david-pisnoy-46juD4zY1XA-unsplash.jpg') no-repeat center center fixed;
+			-webkit-background-size: cover;
+			-moz-background-size: cover;
+			background-size: cover;
+			-o-background-size: cover;
+			position: absolute;
+			width: 100%;
+			height: 100%;
+			z-index: -1;
+			opacity: 0.4;
+		}
+	</style>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.2.45/vue.global.prod.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.2.2/axios.min.js"></script>
@@ -25,11 +45,12 @@
 <!-- <body> -->
 
 <body>
+	<div class="background"></div>
 	<div id="app" class="container">
-		<h1>六角學院 API 資料產生器</h1>
+		<div class="h1 p-3">六角學院 API 資料產生器</div>
 		<div class="alert alert-primary" role="alert">
 			這是一個非官方工具，程式由純前端撰寫，用於產生作業測試用的產品資料，假資料來自於 <a href="https://dummyjson.com">dummyjson.com</a>
-			網站。本程式不會儲存帳密，每次使用請先登入再點選新增資料。
+			網站。本程式不會儲存帳密，每次使用請先登入再點選開始新增資料。
 		</div>
 		<div class="row">
 			<div class="col-sm">
